@@ -1,0 +1,230 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <h1 class="text-center">Chào mừng đến với Phân khúc Khách hàng</h1>
+        <h3 class="text-center">Hiển thị khách hàng theo Cụm</h3>
+    </div>
+
+    <h2 class="text-center">Đặt tên cho các cụm</h2>
+    <div class="cluster-name-form">
+        <h3>Nhập tên cho từng cụm</h3>
+        <div id="cluster-name-inputs"></div>
+        <div id="success-message" class="success-message"></div>
+        <div id="error-message" class="error-message"></div>
+    </div>
+
+    <div class="row">
+        {% for cluster, data in grouped_customers.items %}
+            <div class="col-md-4">
+                <div class="cluster-box">
+                    <h4 class="text-center">Cụm {{ cluster }}</h4>
+                    
+                    <!-- Hiển thị khách hàng trong mỗi trang -->
+                    <div class="customer-grid">
+                        {% for customer in data.page_obj %}
+                            <div class="customer-cell">
+                                <a href="{% url 'customer_detail' customer.customer_id %}">
+                                    ID: {{ customer.customer_id }}
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Phân trang -->
+                    <div class="pagination-controls text-center mb-2">
+                        {% if data.page_obj.has_previous %}
+                            <a href="?page=1">&laquo; Đầu tiên</a>
+                            <a href="?page={{ data.page_obj.previous_page_number }}">Trước</a>
+                        {% endif %}
+        
+                        <span>Trang {{ data.page_obj.number }} của {{ data.page_obj.paginator.num_pages }}</span>
+        
+                        {% if data.page_obj.has_next %}
+                            <a href="?page={{ data.page_obj.next_page_number }}">Tiếp theo</a>
+                            <a href="?page={{ data.page_obj.paginator.num_pages }}">Cuối cùng &raquo;</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    
+
+
+<!-- CSS -->
+<style>
+    .cluster-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        width: 100%;
+    }
+
+    .customer-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        gap: 10px;
+    }
+
+    .customer-cell {
+        border: 1px solid #000;
+        padding: 5px;
+        text-align: center;
+        background-color: #e7ffe7;
+        border-radius: 3px;
+        font-size: 12px;
+    }
+
+    .customer-cell:hover {
+        background-color: #d1ffd1;
+        cursor: pointer;
+    }
+
+    .cluster-name-form {
+        margin: 20px auto;
+        max-width: 600px;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .cluster-name-form h3 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .cluster-name-form input[type="text"] {
+        width: calc(100% - 20px);
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .cluster-name-form button {
+        padding: 10px 20px;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .cluster-name-form button:hover {
+        background: #555;
+    }
+
+    .success-message {
+        color: green;
+        margin-top: 10px;
+        display: none;
+    }
+
+    .error-message {
+        color: red;
+        margin-top: 10px;
+        display: none;
+    }
+</style>
+
+<!-- D3.js & JS -->
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    d3.json("/customer-data/").then(data => {
+        const clusterMap = new Map();
+        data.forEach(d => {
+            if (d.cluster !== undefined && d.cluster !== null) {
+                clusterMap.set(d.cluster, d.cluster_name || "");
+            }
+        });
+
+        const clusters = Array.from(clusterMap.keys()).sort();
+        const container = d3.select("#cluster-name-inputs");
+
+        if (clusters.length === 0) {
+            container.append("p").text("Không có cụm để đặt tên");
+            return;
+        }
+
+        clusters.forEach(cluster => {
+            const currentName = clusterMap.get(cluster);
+
+            const div = container.append("div");
+            div.append("label")
+                .attr("for", `cluster-${cluster}`)
+                .text(`Cụm ${cluster}${currentName ? `: ${currentName}` : ""}`);
+            
+            div.append("input")
+                .attr("type", "text")
+                .attr("id", `cluster-${cluster}`)
+                .attr("placeholder", `Nhập tên mới cho cụm ${cluster}`)
+                .attr("data-cluster", cluster)
+                .property("value", currentName);
+
+            div.append("button")
+                .text("Lưu")
+                .on("click", function () {
+                    const input = d3.select(this.previousElementSibling);
+                    const old_cluster = input.attr("data-cluster");
+                    const cluster_name = input.property("value").trim();
+
+                    if (!cluster_name) {
+                        d3.select("#error-message")
+                            .text("Vui lòng nhập tên cụm")
+                            .style("display", "block");
+                        return;
+                    }
+
+                    fetch("{% url 'save_cluster_name' %}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            "X-CSRFToken": "{{ csrf_token }}"
+                        },
+                        body: `cluster=${encodeURIComponent(old_cluster)}&cluster_name=${encodeURIComponent(cluster_name)}`
+                    })
+                    .then(response => response.json())
+                    .then(response => {
+                        if (response.status === "success") {
+                            d3.select("#success-message")
+                                .text(response.message)
+                                .style("display", "block");
+                            d3.select("#error-message").style("display", "none");
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            d3.select("#error-message")
+                                .text(response.message)
+                                .style("display", "block");
+                            d3.select("#success-message").style("display", "none");
+                        }
+                    })
+                    .catch(error => {
+                        d3.select("#error-message")
+                            .text("Lỗi khi lưu tên cụm")
+                            .style("display", "block");
+                        d3.select("#success-message").style("display", "none");
+                    });
+                });
+        });
+    });
+});
+
+{% comment %} function showPage(cluster, pageNumber) {
+    // Ẩn tất cả trang trong cụm đó
+    document.querySelectorAll(`.page-${cluster}`).forEach(el => el.style.display = 'none');
+    // Hiện trang đang chọn
+    document.querySelectorAll(`.page-${cluster}-${pageNumber}`).forEach(el => el.style.display = 'block');
+} {% endcomment %}
+</script>
+
+
+
+{% endblock content %}

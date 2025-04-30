@@ -1,0 +1,39 @@
+{% extends "main.html" %}
+{% block content %}
+<div style="max-width: 800px; margin: auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <h2 style="text-align: center;">Thông tin chi tiết khách hàng</h2>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr><th>ID</th><td>{{ customer.customer_id }}</td></tr>
+        <tr><th>Năm sinh</th><td>{{ customer.year_birth }}</td></tr>
+        <tr><th>Trình độ học vấn</th><td>{{ customer.education }}</td></tr>
+        <tr><th>Tình trạng hôn nhân</th><td>{{ customer.marital_status }}</td></tr>
+        <tr><th>Thu nhập</th><td>{{ customer.income }}</td></tr>
+        <tr><th>Số trẻ em</th><td>{{ customer.kidhome }}</td></tr>
+        <tr><th>Số thiếu niên</th><td>{{ customer.teenhome }}</td></tr>
+        <tr><th>Ngày trở thành khách hàng</th><td>{{ customer.dt_customer }}</td></tr>
+        <tr><th>Recency</th><td>{{ customer.recency }}</td></tr>
+        <tr><th>Complain</th><td>{{ customer.complain }}</td></tr>
+        <tr><th>Mua rượu</th><td>{{ customer.mnt_wines }}</td></tr>
+        <tr><th>Mua trái cây</th><td>{{ customer.mnt_fruits }}</td></tr>
+        <tr><th>Mua thịt</th><td>{{ customer.mnt_meat_products }}</td></tr>
+        <tr><th>Mua cá</th><td>{{ customer.mnt_fish_products }}</td></tr>
+        <tr><th>Mua đồ ngọt</th><td>{{ customer.mnt_sweet_products }}</td></tr>
+        <tr><th>Mua vàng</th><td>{{ customer.mnt_gold_prods }}</td></tr>
+        <tr><th>Số deal mua</th><td>{{ customer.num_deals_purchases }}</td></tr>
+        <tr><th>Chấp nhận chiến dịch 1</th><td>{{ customer.accepted_cmp1 }}</td></tr>
+        <tr><th>Chấp nhận chiến dịch 2</th><td>{{ customer.accepted_cmp2 }}</td></tr>
+        <tr><th>Chấp nhận chiến dịch 3</th><td>{{ customer.accepted_cmp3 }}</td></tr>
+        <tr><th>Chấp nhận chiến dịch 4</th><td>{{ customer.accepted_cmp4 }}</td></tr>
+        <tr><th>Chấp nhận chiến dịch 5</th><td>{{ customer.accepted_cmp5 }}</td></tr>
+        <tr><th>Phản hồi</th><td>{{ customer.response }}</td></tr>
+        <tr><th>Mua qua web</th><td>{{ customer.num_web_purchases }}</td></tr>
+        <tr><th>Mua qua catalog</th><td>{{ customer.num_catalog_purchases }}</td></tr>
+        <tr><th>Mua tại cửa hàng</th><td>{{ customer.num_store_purchases }}</td></tr>
+        <tr><th>Lượt truy cập web/tháng</th><td>{{ customer.num_web_visits_month }}</td></tr>
+        <tr><th>Cụm</th><td>{{ customer.cluster }}</td></tr>
+    </table>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="javascript:history.back()" class="btn btn-secondary">Quay lại</a>
+    </div>
+</div>
+{% endblock %}
